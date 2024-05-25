@@ -2,10 +2,9 @@ import pygame
 from OpenGL.GL import *
 from core.PyEngine import PyEngineGL
 from core.Camera import Camera
-from core.LoadMesh import LoadMesh
 from core.Light import Light
 from core.Material import Material
-from core.Mesh import Axes
+from core.Mesh import Axes, Mesh
 
 
 class ExampleProgram(PyEngineGL):
@@ -36,14 +35,14 @@ class ExampleProgram(PyEngineGL):
         self.light2 = Light(
             pygame.Vector3(0, 0, 0), color=pygame.Vector3(1, 1, 1), light_number=1
         )
-        self.plane = LoadMesh(
+        self.plane = Mesh.load(
             "/home/aleksandr/game-engine/Engine2/models/plane.obj",
             "/home/aleksandr/game-engine/Engine2/models/crate.png",
             location=pygame.Vector3(0, 0, 0),
             material=self.material,
             scale=pygame.Vector3(2, 2, 2),
         )
-        self.donut = LoadMesh(
+        self.donut = Mesh.load(
             "/home/aleksandr/game-engine/Engine2/models/donut.obj",
             material=self.material,
             location=pygame.Vector3(0, 0, 0),

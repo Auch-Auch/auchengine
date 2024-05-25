@@ -27,7 +27,7 @@ class Mesh:
         self.draw_type = draw_type
         self.vao_ref = glGenVertexArrays(1)
         self.vertex_normals = vertex_normals
-        self.vetex_textures = vertex_textures
+        self.vertex_textures = vertex_textures
         self.image = None
         self.texture = None
         glBindVertexArray(self.vao_ref)
@@ -57,6 +57,85 @@ class Mesh:
             self.image = Texture(imagefile)
             self.texture = Uniform("sampler2D", [self.image.texture_id, 1])
             self.texture.find_variable(self.material.program_id, "tex")
+
+    @staticmethod
+    def form_vertices(coordinates, triangles):
+        allTriangles = []
+        for t in range(0, len(triangles), 3):
+            allTriangles.extend(
+                [
+                    coordinates[triangles[t]],
+                    coordinates[triangles[t + 1]],
+                    coordinates[triangles[t + 2]],
+                ]
+            )
+        return np.array(allTriangles, np.float32)
+
+    @classmethod
+    def load(
+        cls,
+        filename,
+        imagefile=None,
+        colors=None,
+        draw_type=GL_TRIANGLES,
+        location=pygame.Vector3(0, 0, 0),
+        rotation=transform.Rotation(0, pygame.Vector3(0, 1, 0)),
+        scale=pygame.Vector3(1, 1, 1),
+        material=None,
+    ):
+        coordinates = []
+        normals = []
+        textures = []
+        triangles = []
+        textures_ids = []
+        normals_ids = []
+        with open(filename) as fp:
+            line = fp.readline()
+            while line:
+                if line[:2] == "v ":
+                    vx, vy, vz = [float(value) for value in line[2:].split()]
+                    coordinates.append((vx, vy, vz))
+                if line[:2] == "vn":
+                    nx, ny, nz = [float(value) for value in line[3:].split()]
+                    normals.append((nx, ny, nz))
+                if line[:2] == "vt":
+                    tx, ty = [float(value) for value in line[3:].split()]
+                    textures.append((tx, ty))
+                if line[:2] == "f ":
+                    t1, t2, t3 = [value for value in line[2:].split()]
+                    values_t1 = [int(value) for value in t1.split("/")]
+                    triangles.append(values_t1[0] - 1)
+                    textures_ids.append(values_t1[1] - 1)
+                    normals_ids.append(values_t1[2] - 1)
+                    values_t2 = [int(value) for value in t2.split("/")]
+                    triangles.append(values_t2[0] - 1)
+                    textures_ids.append(values_t2[1] - 1)
+                    normals_ids.append(values_t2[2] - 1)
+                    values_t3 = [int(value) for value in t3.split("/")]
+                    triangles.append(values_t3[0] - 1)
+                    textures_ids.append(values_t3[1] - 1)
+                    normals_ids.append(values_t3[2] - 1)
+                line = fp.readline()
+        vertices = cls.form_vertices(coordinates, triangles)
+        vertex_normals = cls.form_vertices(normals, normals_ids)
+        vertex_textures = cls.form_vertices(textures, textures_ids)
+        colors = (
+            colors
+            if colors is not None
+            else np.random.uniform(0, 1, (len(vertices), 4)).astype(np.float32)
+        )
+        return cls(
+            vertices,
+            imagefile=imagefile,
+            colors=colors,
+            draw_type=draw_type,
+            vertex_normals=vertex_normals,
+            vertex_textures=vertex_textures,
+            translation=location,
+            rotation=rotation,
+            scale=scale,
+            material=material,
+        )
 
     def rotate(self, angle, axis):
         self.transformation_mat = transform.rotateA(
