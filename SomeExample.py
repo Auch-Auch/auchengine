@@ -20,12 +20,12 @@ class ExampleProgram(PyEngineGL):
 
     def initialize(self):
         self.material = Material(
-            "/home/aleksandr/game-engine/Engine3/shaders/textruedvert.vs",
-            "/home/aleksandr/game-engine/Engine3/shaders/texturedfrag.vs",
+            "shaders/textruedvert.vs",
+            "shaders/texturedfrag.vs",
         )
         self.axes_mat = Material(
-            "/home/aleksandr/game-engine/Engine3/shaders/vertexcolvert.vs",
-            "/home/aleksandr/game-engine/Engine3/shaders/vertexcolfrag.vs",
+            "shaders/vertexcolvert.vs",
+            "shaders/vertexcolfrag.vs",
         )
         self.axes = Axes(self.axes_mat, pygame.Vector3(0, 0, 0))
         self.camera = Camera(self.screen_width, self.screen_height)
@@ -36,14 +36,14 @@ class ExampleProgram(PyEngineGL):
             pygame.Vector3(0, 0, 0), color=pygame.Vector3(1, 1, 1), light_number=1
         )
         self.plane = Mesh.load(
-            "/home/aleksandr/game-engine/Engine2/models/plane.obj",
-            "/home/aleksandr/game-engine/Engine2/models/crate.png",
+            "models/plane.obj",
+            "images/crate.png",
             location=pygame.Vector3(0, 0, 0),
             material=self.material,
             scale=pygame.Vector3(2, 2, 2),
         )
         self.donut = Mesh.load(
-            "/home/aleksandr/game-engine/Engine2/models/donut.obj",
+            "models/donut.obj",
             material=self.material,
             location=pygame.Vector3(0, 0, 0),
             scale=pygame.Vector3(2, 2, 2),
@@ -59,4 +59,5 @@ class ExampleProgram(PyEngineGL):
         self.plane.draw(self.camera, [self.light])
 
 
-ExampleProgram().main_loop()
+if __name__ == "__main__":
+    ExampleProgram().main_loop()

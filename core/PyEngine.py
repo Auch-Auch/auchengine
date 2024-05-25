@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 import os
 from OpenGL.GL import *
 from OpenGL.GLUT import *
@@ -6,7 +7,7 @@ import pygame
 from pygame.locals import *
 
 
-class PyEngineGL:
+class PyEngineGL(ABC):
     def __init__(self, screenPosX, screenPosY, screenWidth, screenHeight) -> None:
         os.environ["SDL_VIDEO_WINDOW_POS"] = "%d,%d" % (screenPosX, screenPosY)
         self.screen_width = screenWidth
@@ -24,9 +25,11 @@ class PyEngineGL:
         self.camera = None
         self.clock = pygame.time.Clock()
 
+    @abstractmethod
     def initialize(self):
         pass
 
+    @abstractmethod
     def display(self):
         pass
 
