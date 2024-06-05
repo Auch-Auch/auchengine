@@ -1,10 +1,10 @@
 from OpenGL.GL import *
 import pygame
 import numpy as np
-from core.GraphicsData import GraphicsData
-from core.Uniform import Uniform
-import core.Transformations as transform
-from core.Texture import Texture
+from core.graphics_data import GraphicsData
+from core.uniform import Uniform
+import core.transformations as transform
+from core.texture import Texture
 
 
 class Mesh:
@@ -19,9 +19,9 @@ class Mesh:
         translation=pygame.Vector3(0, 0, 0),
         rotation=transform.Rotation(0, pygame.Vector3(0, 1, 0)),
         scale=pygame.Vector3(1, 1, 1),
-        material=None,
+        shader=None,
     ):
-        self.material = material
+        self.shader = shader
         self.vertices = vertices
         self.colors = colors
         self.draw_type = draw_type
@@ -32,13 +32,13 @@ class Mesh:
         self.texture = None
         glBindVertexArray(self.vao_ref)
         position = GraphicsData("vec3", self.vertices)
-        position.create_variable(self.material.program_id, "position")
+        position.create_variable(self.shader.program_id, "position")
         if colors is not None:
             colors = GraphicsData("vec3", self.colors)
-            colors.create_variable(self.material.program_id, "vertex_color")
+            colors.create_variable(self.shader.program_id, "vertex_color")
         if vertex_normals is not None:
             v_normals = GraphicsData("vec3", self.vertex_normals)
-            v_normals.create_variable(self.material.program_id, "vertex_normal")
+            v_normals.create_variable(self.shader.program_id, "vertex_normal")
         self.transformation_mat = transform.rotateA(
             transform.identity_matrix(), rotation.angle, rotation.axis
         )
@@ -49,14 +49,14 @@ class Mesh:
             self.transformation_mat, scale.x, scale.y, scale.z
         )
         self.transformation = Uniform("mat4", self.transformation_mat)
-        self.transformation.find_variable(self.material.program_id, "model_mat")
+        self.transformation.find_variable(self.shader.program_id, "model_mat")
 
         if imagefile is not None and vertex_textures is not None:
             textures = GraphicsData("vec2", self.vertex_textures)
-            textures.create_variable(self.material.program_id, "vertex_uv")
+            textures.create_variable(self.shader.program_id, "vertex_uv")
             self.image = Texture(imagefile)
             self.texture = Uniform("sampler2D", [self.image.texture_id, 1])
-            self.texture.find_variable(self.material.program_id, "tex")
+            self.texture.find_variable(self.shader.program_id, "tex")
 
     @staticmethod
     def form_vertices(coordinates, triangles):
@@ -81,7 +81,7 @@ class Mesh:
         location=pygame.Vector3(0, 0, 0),
         rotation=transform.Rotation(0, pygame.Vector3(0, 1, 0)),
         scale=pygame.Vector3(1, 1, 1),
-        material=None,
+        shader=None,
     ):
         coordinates = []
         normals = []
@@ -134,7 +134,7 @@ class Mesh:
             translation=location,
             rotation=rotation,
             scale=scale,
-            material=material,
+            shader=shader,
         )
 
     def rotate(self, angle, axis):
@@ -142,28 +142,28 @@ class Mesh:
             self.transformation_mat, angle, axis
         )
         self.transformation = Uniform("mat4", self.transformation_mat)
-        self.transformation.find_variable(self.material.program_id, "model_mat")
+        self.transformation.find_variable(self.shader.program_id, "model_mat")
 
     def translate(self, translation):
         self.transformation_mat = transform.translate(
             self.transformation_mat, translation.x, translation.y, translation.z
         )
         self.transformation = Uniform("mat4", self.transformation_mat)
-        self.transformation.find_variable(self.material.program_id, "model_mat")
+        self.transformation.find_variable(self.shader.program_id, "model_mat")
 
     def scale(self, scale):
         self.transformation_mat = transform.do_scale(
             self.transformation_mat, scale.x, scale.y, scale.z
         )
         self.transformation = Uniform("mat4", self.transformation_mat)
-        self.transformation.find_variable(self.material.program_id, "model_mat")
+        self.transformation.find_variable(self.shader.program_id, "model_mat")
 
     def draw(self, camera, lights=None):
-        self.material.use()
-        camera.update(self.material.program_id)
+        self.shader.use()
+        camera.update(self.shader.program_id)
         if lights is not None:
             for light in lights:
-                light.update(self.material.program_id)
+                light.update(self.shader.program_id)
         if self.texture:
             self.texture.load()
         self.transformation.load()
@@ -227,7 +227,7 @@ class Cube(Mesh):
 
 
 class Axes(Mesh):
-    def __init__(self, material, location):
+    def __init__(self, shader, location):
         vertices = np.array(
             [
                 [-100, 0.0, 0.0],
@@ -253,7 +253,7 @@ class Axes(Mesh):
         super().__init__(
             vertices,
             colors=colors,
-            material=material,
+            shader=shader,
             draw_type=GL_LINES,
             translation=location,
         )

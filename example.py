@@ -1,10 +1,10 @@
 import pygame
 from OpenGL.GL import *
-from core.PyEngine import PyEngineGL
-from core.Camera import Camera
-from core.Light import Light
-from core.Material import Material
-from core.Mesh import Axes, Mesh
+from core.engine import PyEngineGL
+from core.camera import Camera
+from core.light import Light
+from core.shader import Shader
+from core.mesh import Axes, Mesh
 
 
 class ExampleProgram(PyEngineGL):
@@ -13,17 +13,17 @@ class ExampleProgram(PyEngineGL):
         self.camera = None
         self.plane = None
         self.light = None
-        self.material = None
+        self.shader = None
         glEnable(GL_CULL_FACE)
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
     def initialize(self):
-        self.material = Material(
+        self.shader = Shader(
             "shaders/textruedvert.vs",
             "shaders/texturedfrag.vs",
         )
-        self.axes_mat = Material(
+        self.axes_mat = Shader(
             "shaders/vertexcolvert.vs",
             "shaders/vertexcolfrag.vs",
         )
@@ -39,12 +39,12 @@ class ExampleProgram(PyEngineGL):
             "models/plane.obj",
             "images/crate.png",
             location=pygame.Vector3(0, 0, 0),
-            material=self.material,
+            shader=self.shader,
             scale=pygame.Vector3(2, 2, 2),
         )
         self.donut = Mesh.load(
             "models/donut.obj",
-            material=self.material,
+            shader=self.shader,
             location=pygame.Vector3(0, 0, 0),
             scale=pygame.Vector3(2, 2, 2),
         )
@@ -52,7 +52,7 @@ class ExampleProgram(PyEngineGL):
 
     def display(self):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        self.material.use()
+        self.shader.use()
         self.axes.draw(self.camera)
         self.donut.rotate(1, pygame.Vector3(1, 0, 1))
         self.donut.draw(self.camera, [self.light, self.light2])

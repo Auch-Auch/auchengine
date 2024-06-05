@@ -4,8 +4,8 @@ from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 import numpy as np
-import core.Transformations as transform
-from core.Uniform import Uniform
+import core.transformations as transform
+from core.uniform import Uniform
 
 
 class Camera:

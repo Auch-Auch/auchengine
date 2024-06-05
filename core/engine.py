@@ -26,11 +26,11 @@ class PyEngineGL(ABC):
         self.clock = pygame.time.Clock()
 
     @abstractmethod
-    def initialize(self):
+    def initialize(self) -> None:
         pass
 
     @abstractmethod
-    def display(self):
+    def display(self) -> None:
         pass
 
     def main_loop(self):

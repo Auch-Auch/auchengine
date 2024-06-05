@@ -1,8 +1,8 @@
 from OpenGL.GL import *
-import core.Utils as utils
+import core.utils as utils
 
 
-class Material:
+class Shader:
     def __init__(self, vertex_shader, fragment_shader):
         vertex_shader_program = utils.read_file(vertex_shader)
         fragment_shader_program = utils.read_file(fragment_shader)

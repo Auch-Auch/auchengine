@@ -1,6 +1,6 @@
 import pygame
-import core.Transformations as transform
-from core.Uniform import Uniform
+import core.transformations as transform
+from core.uniform import Uniform
 
 
 class Light:
