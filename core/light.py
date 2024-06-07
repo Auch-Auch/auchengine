@@ -1,6 +1,6 @@
 import pygame
 import core.transformations as transform
-from core.uniform import Uniform
+from core.uniform import UniformVec3
 
 
 class Light:
@@ -12,9 +12,9 @@ class Light:
         self.color_variable = "light_data[" + str(light_number) + "].color"
 
     def update(self, program_id):
-        light_pos = Uniform("vec3", self.position)
+        light_pos = UniformVec3(self.position)
         light_pos.find_variable(program_id, self.light_variable)
-        light_pos.load()
-        color = Uniform("vec3", self.color)
+        light_pos.load_data()
+        color = UniformVec3(self.color)
         color.find_variable(program_id, self.color_variable)
-        color.load()
+        color.load_data()

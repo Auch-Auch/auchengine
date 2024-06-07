@@ -5,18 +5,18 @@ from OpenGL.GLUT import *
 from OpenGL.GLU import *
 import numpy as np
 import core.transformations as transform
-from core.uniform import Uniform
+from core.uniform import UniformMat4
 
 
 class Camera:
-    def __init__(self, w, h):
+    def __init__(self, width, height, fov=60):
         self.transfromation = transform.identity_matrix()
         self.last_mouse = pygame.math.Vector2(0, 0)
         self.mouse_sensativity = 0.2
-        self.projection_mat = self.perspective_matrix(w / h, 60, 0.01, 10000)
-        self.projection = Uniform("mat4", self.projection_mat)
-        self.screen_width = w
-        self.screen_height = h
+        self.projection_mat = self.perspective_matrix(width / height, fov, 0.01, 10000)
+        self.projection = UniformMat4(self.projection_mat)
+        self.screen_width = width
+        self.screen_height = height
 
     def rotate(self, yaw, pitch):
         forward = pygame.math.Vector3(
@@ -77,10 +77,9 @@ class Camera:
             self.transfromation = transform.translate(
                 self.transfromation, -self.mouse_sensativity, 0, 0, local=True
             )
-
         self.projection.find_variable(program_id, "projection_mat")
-        self.projection.load()
+        self.projection.load_data()
         lookat_mat = self.transfromation
-        lookat = Uniform("mat4", lookat_mat)
+        lookat = UniformMat4(lookat_mat)
         lookat.find_variable(program_id, "view_mat")
-        lookat.load()
+        lookat.load_data()

@@ -1,11 +1,10 @@
 from OpenGL.GL import *
 import pygame
 import numpy as np
-from core.graphics_data import GraphicsData
-from core.uniform import Uniform
+from core.uniform import UniformSampler2D, UniformMat4
 import core.transformations as transform
 from core.texture import Texture
-
+from core.graphics_data import GraphicsDataVec
 
 class Mesh:
     def __init__(
@@ -31,14 +30,18 @@ class Mesh:
         self.image = None
         self.texture = None
         glBindVertexArray(self.vao_ref)
-        position = GraphicsData("vec3", self.vertices)
-        position.create_variable(self.shader.program_id, "position")
+
+        position = GraphicsDataVec(self.vertices)
+        position.find_variable(self.shader.program_id, "position")
+        position.load_data()
         if colors is not None:
-            colors = GraphicsData("vec3", self.colors)
-            colors.create_variable(self.shader.program_id, "vertex_color")
+            colors = GraphicsDataVec(self.colors)
+            colors.find_variable(self.shader.program_id, "vertex_color")
+            colors.load_data()
         if vertex_normals is not None:
-            v_normals = GraphicsData("vec3", self.vertex_normals)
-            v_normals.create_variable(self.shader.program_id, "vertex_normal")
+            v_normals = GraphicsDataVec(self.vertex_normals)
+            v_normals.find_variable(self.shader.program_id, "vertex_normal")
+            v_normals.load_data()
         self.transformation_mat = transform.rotateA(
             transform.identity_matrix(), rotation.angle, rotation.axis
         )
@@ -48,14 +51,14 @@ class Mesh:
         self.transformation_mat = transform.do_scale(
             self.transformation_mat, scale.x, scale.y, scale.z
         )
-        self.transformation = Uniform("mat4", self.transformation_mat)
+        self.transformation = UniformMat4(self.transformation_mat)
         self.transformation.find_variable(self.shader.program_id, "model_mat")
-
         if imagefile is not None and vertex_textures is not None:
-            textures = GraphicsData("vec2", self.vertex_textures)
-            textures.create_variable(self.shader.program_id, "vertex_uv")
+            textures = GraphicsDataVec(self.vertex_textures)
+            textures.find_variable(self.shader.program_id, "vertex_uv")
+            textures.load_data()
             self.image = Texture(imagefile)
-            self.texture = Uniform("sampler2D", [self.image.texture_id, 1])
+            self.texture = UniformSampler2D([self.image.texture_id, 1])
             self.texture.find_variable(self.shader.program_id, "tex")
 
     @staticmethod
@@ -119,6 +122,7 @@ class Mesh:
         vertices = cls.form_vertices(coordinates, triangles)
         vertex_normals = cls.form_vertices(normals, normals_ids)
         vertex_textures = cls.form_vertices(textures, textures_ids)
+
         colors = (
             colors
             if colors is not None
@@ -141,22 +145,23 @@ class Mesh:
         self.transformation_mat = transform.rotateA(
             self.transformation_mat, angle, axis
         )
-        self.transformation = Uniform("mat4", self.transformation_mat)
+        self.transformation = UniformMat4(self.transformation_mat)
         self.transformation.find_variable(self.shader.program_id, "model_mat")
+        self.transformation.load_data()
 
     def translate(self, translation):
         self.transformation_mat = transform.translate(
             self.transformation_mat, translation.x, translation.y, translation.z
         )
-        self.transformation = Uniform("mat4", self.transformation_mat)
-        self.transformation.find_variable(self.shader.program_id, "model_mat")
+        self.transformation = UniformMat4(self.transformation_mat)
+        self.transformation.load_data()
 
     def scale(self, scale):
         self.transformation_mat = transform.do_scale(
             self.transformation_mat, scale.x, scale.y, scale.z
         )
-        self.transformation = Uniform("mat4", self.transformation_mat)
-        self.transformation.find_variable(self.shader.program_id, "model_mat")
+        self.transformation = UniformMat4(self.transformation_mat)
+        self.transformation.load_data()
 
     def draw(self, camera, lights=None):
         self.shader.use()
@@ -165,8 +170,8 @@ class Mesh:
             for light in lights:
                 light.update(self.shader.program_id)
         if self.texture:
-            self.texture.load()
-        self.transformation.load()
+            self.texture.load_data()
+        self.transformation.load_data()
         glBindVertexArray(self.vao_ref)
         glDrawArrays(self.draw_type, 0, len(self.vertices))
 
