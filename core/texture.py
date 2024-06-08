@@ -8,7 +8,7 @@ class Texture:
         self.texture_id = glGenTextures(1)
         self.load()
 
-    def load(self):
+    def load(self) -> None:
         pixel_data = pygame.image.tostring(self.surface, "RGBA", 1)
         glBindTexture(GL_TEXTURE_2D, self.texture_id)
         glTexImage2D(

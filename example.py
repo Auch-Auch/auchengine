@@ -20,11 +20,11 @@ class ExampleProgram(PyEngineGL):
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
     def initialize(self):
-        self.shader = Shader(
+        self.shader = Shader.from_file(
             "shaders/textruedvert.vs",
             "shaders/texturedfrag.vs",
         )
-        self.axes_mat = Shader(
+        self.axes_mat = Shader.from_file(
             "shaders/vertexcolvert.vs",
             "shaders/vertexcolfrag.vs",
         )

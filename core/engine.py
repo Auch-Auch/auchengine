@@ -7,8 +7,10 @@ import pygame
 from pygame.locals import *
 
 
-class PyEngineGL(ABC):
-    def __init__(self, screenPosX, screenPosY, screenWidth, screenHeight) -> None:
+class PyEngineGL(ABC): #TODO think about desired interface and refactor
+    def __init__(
+        self, screenPosX: int, screenPosY: int, screenWidth: int, screenHeight: int
+    ) -> None:
         os.environ["SDL_VIDEO_WINDOW_POS"] = "%d,%d" % (screenPosX, screenPosY)
         self.screen_width = screenWidth
         self.screen_height = screenHeight
@@ -33,7 +35,7 @@ class PyEngineGL(ABC):
     def display(self) -> None:
         pass
 
-    def main_loop(self):
+    def main_loop(self) -> None:
         done = False
         self.initialize()
         pygame.event.set_grab(True)

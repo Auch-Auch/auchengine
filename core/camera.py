@@ -3,13 +3,14 @@ import pygame
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
+from numpy.typing import NDArray
 import numpy as np
 import core.transformations as transform
 from core.uniform import UniformMat4
 
 
 class Camera:
-    def __init__(self, width, height, fov=60):
+    def __init__(self, width: int, height: int, fov: int = 60):
         self.transfromation = transform.identity_matrix()
         self.last_mouse = pygame.math.Vector2(0, 0)
         self.mouse_sensativity = 0.2
@@ -18,7 +19,7 @@ class Camera:
         self.screen_width = width
         self.screen_height = height
 
-    def rotate(self, yaw, pitch):
+    def rotate(self, yaw: int, pitch: int) -> None:
         forward = pygame.math.Vector3(
             self.transfromation[0][2],
             self.transfromation[1][2],
@@ -34,7 +35,9 @@ class Camera:
                 self.transfromation, pitch, "x", local=True
             )
 
-    def perspective_matrix(self, aspect, fov, zNear, zFar):
+    def perspective_matrix(
+        self, aspect: float, fov: int, zNear: int, zFar: int
+    ) -> NDArray:
         a = math.radians(fov)
         d = 1.0 / math.tan(a / 2.0)
         r = aspect
@@ -45,7 +48,7 @@ class Camera:
             dtype=np.float32,
         )
 
-    def update(self, program_id):
+    def update(self, program_id: int) -> None:
         if pygame.mouse.get_visible():
             return
         pygame.mouse.set_visible(False)
@@ -66,20 +69,20 @@ class Camera:
                 pygame.Vector3(0, 0, self.mouse_sensativity),
                 local=True,
             )
-        if keys[pygame.K_UP]:
+        elif keys[pygame.K_UP]:
             self.transfromation = transform.translate(
                 self.transfromation,
                 pygame.Vector3(0, 0, -self.mouse_sensativity),
                 local=True,
             )
 
-        if keys[pygame.K_RIGHT]:
+        elif keys[pygame.K_RIGHT]:
             self.transfromation = transform.translate(
                 self.transfromation,
                 pygame.Vector3(self.mouse_sensativity, 0, 0),
                 local=True,
             )
-        if keys[pygame.K_LEFT]:
+        elif keys[pygame.K_LEFT]:
             self.transfromation = transform.translate(
                 self.transfromation,
                 pygame.Vector3(-self.mouse_sensativity, 0, 0),

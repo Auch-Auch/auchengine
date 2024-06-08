@@ -247,7 +247,9 @@ class Cube(Mesh):
 
 
 class Axes(Mesh):
-    def __init__(self, shader, location):
+    def __init__(
+        self, shader: Shader, translation: pygame.Vector3 = pygame.Vector3(0, 0, 0)
+    ):
         vertices = np.array(
             [
                 [-100, 0.0, 0.0],
@@ -275,5 +277,5 @@ class Axes(Mesh):
             colors=colors,
             shader=shader,
             draw_type=GL_LINES,
-            translation=location,
+            translation=translation,
         )

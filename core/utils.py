@@ -5,7 +5,7 @@ from OpenGL.GLU import *
 from pygame.locals import *
 
 
-def compile_shaders(shader_type, shader_source):
+def compile_shaders(shader_type: int, shader_source: str) -> int:
     shader_id = glCreateShader(shader_type)
     glShaderSource(shader_id, shader_source)
     glCompileShader(shader_id)
@@ -18,7 +18,7 @@ def compile_shaders(shader_type, shader_source):
     return shader_id
 
 
-def create_program(vertex_shader_code, fragment_shader_code):
+def create_program(vertex_shader_code: str, fragment_shader_code: str) -> int:
     vertex_shader_id = compile_shaders(GL_VERTEX_SHADER, vertex_shader_code)
     fragmet_shader_id = compile_shaders(GL_FRAGMENT_SHADER, fragment_shader_code)
     program_id = glCreateProgram()
