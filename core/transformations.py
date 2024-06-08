@@ -1,13 +1,16 @@
+import pygame
+import dataclasses
+from numpy.typing import NDArray
 import numpy as np
 
 
+@dataclasses.dataclass(frozen=True, slots=True)
 class Rotation:
-    def __init__(self, angle, axis):
-        self.angle = angle
-        self.axis = axis
+    angle: float
+    axis: pygame.Vector3
 
 
-def identity_matrix():
+def identity_matrix() -> NDArray:
     return np.array(
         [
             [1, 0, 0, 0],
@@ -19,31 +22,31 @@ def identity_matrix():
     )
 
 
-def translate_matrix(x, y, z):
+def translate_matrix(vec: pygame.Vector3) -> NDArray:
     return np.array(
         [
-            [1, 0, 0, x],
-            [0, 1, 0, y],
-            [0, 0, 1, z],
+            [1, 0, 0, vec.x],
+            [0, 1, 0, vec.y],
+            [0, 0, 1, vec.z],
             [0, 0, 0, 1],
         ],
         np.float32,
     )
 
 
-def scale_matrix(x, y, z):
+def scale_matrix(vec: pygame.Vector3) -> NDArray:
     return np.array(
         [
-            [x, 0, 0, 0],
-            [0, y, 0, 0],
-            [0, 0, z, 0],
+            [vec.x, 0, 0, 0],
+            [0, vec.y, 0, 0],
+            [0, 0, vec.z, 0],
             [0, 0, 0, 1],
         ],
         np.float32,
     )
 
 
-def rotate_x_mat(angle):
+def rotate_x_mat(angle: float) -> NDArray:
     c = np.cos(np.radians(angle))
     s = np.sin(np.radians(angle))
     return np.array(
@@ -51,7 +54,7 @@ def rotate_x_mat(angle):
     )
 
 
-def rotate_y_mat(angle):
+def rotate_y_mat(angle: float) -> NDArray:
     c = np.cos(np.radians(angle))
     s = np.sin(np.radians(angle))
     return np.array(
@@ -59,7 +62,7 @@ def rotate_y_mat(angle):
     )
 
 
-def rotate_z_mat(angle):
+def rotate_z_mat(angle: float) -> NDArray:
     c = np.cos(np.radians(angle))
     s = np.sin(np.radians(angle))
     return np.array(
@@ -67,7 +70,7 @@ def rotate_z_mat(angle):
     )
 
 
-def rotate_axis_matrix(theta, axis):
+def rotate_axis_matrix(theta: float, axis: pygame.Vector3) -> NDArray:
     """matrix that rotates about any axis"""
     c = np.cos(np.radians(theta))
     s = np.sin(np.radians(theta))
@@ -101,23 +104,23 @@ def rotate_axis_matrix(theta, axis):
     )
 
 
-def translate(matrix, x, y, z, local=False):
+def translate(matrix: NDArray, vec: pygame.Vector3, local: bool = False) -> NDArray:
     if local:
-        return matrix @ translate_matrix(x, y, z)
-    return translate_matrix(x, y, z) @ matrix
+        return matrix @ translate_matrix(vec)
+    return translate_matrix(vec) @ matrix
 
 
-def do_scale(matrix, x, y, z):
-    return matrix @ scale_matrix(x, y, z)
+def do_scale(matrix: NDArray, vec: pygame.Vector3) -> NDArray:
+    return matrix @ scale_matrix(vec)
 
 
-def rotate(matrix, angle, axis, local=True):
+def rotate(matrix: NDArray, angle: float, axis: str, local: bool = True):
     rot = identity_matrix()
     if axis == "x":
         rot = rotate_x_mat(angle)
-    if axis == "y":
+    elif axis == "y":
         rot = rotate_y_mat(angle)
-    if axis == "z":
+    elif axis == "z":
         rot = rotate_z_mat(angle)
     if local:
         return matrix @ rot
@@ -125,7 +128,7 @@ def rotate(matrix, angle, axis, local=True):
         return rot @ matrix
 
 
-def rotateA(matrix, theta, axis, local=True):
+def rotateA(matrix: NDArray, theta: float, axis: pygame.Vector3, local: bool = True):
     """rotates about any axis"""
     if local:
         return matrix @ rotate_axis_matrix(theta, axis)

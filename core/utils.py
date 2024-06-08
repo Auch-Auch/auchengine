@@ -1,3 +1,4 @@
+import io
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
@@ -36,3 +37,41 @@ def create_program(vertex_shader_code, fragment_shader_code):
 def read_file(path) -> str:
     with open(path) as f:
         return f.read()
+
+
+def parse_obj(
+    content: io.BytesIO,
+) -> tuple[
+    list[tuple[float, float, float]],
+    list[tuple[float, float, float]],
+    list[tuple[float, float]],
+    list[int],
+    list[int],
+    list[int],
+]:
+    coordinates = []
+    normals = []
+    textures = []
+    triangles = []
+    textures_ids = []
+    normals_ids = []
+
+    while line := content.readline():
+        if line.startswith(b"v "):
+            _, vx, vy, vz = line.split(b" ")
+            coordinates.append((float(vx), float(vy), float(vz)))
+        elif line.startswith(b"vn"):
+            _, nx, ny, nz = line.split(b" ")
+            normals.append((float(nx), float(ny), float(nz)))
+        elif line.startswith(b"vt"):
+            _, tx, ty = line.split(b" ")
+            textures.append((float(tx), float(ty)))
+        elif line.startswith(b"f "):
+            _, t1, t2, t3 = line.split(b" ")
+            for t in [t1, t2, t3]:
+                v, t, n = map(int, t.split(b"/"))
+                triangles.append(v - 1)
+                textures_ids.append(t - 1)
+                normals_ids.append(n - 1)
+
+    return coordinates, normals, textures, triangles, textures_ids, normals_ids

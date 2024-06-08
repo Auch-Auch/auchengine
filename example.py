@@ -5,6 +5,7 @@ from core.camera import Camera
 from core.light import Light
 from core.shader import Shader
 from core.mesh import Axes, Mesh
+from core.transformations import Rotation
 
 
 class ExampleProgram(PyEngineGL):
@@ -35,17 +36,19 @@ class ExampleProgram(PyEngineGL):
         self.light2 = Light(
             pygame.Vector3(0, 0, 0), color=pygame.Vector3(1, 1, 1), light_number=1
         )
-        self.plane = Mesh.load(
+
+        self.plane = Mesh.from_file(
             "models/plane.obj",
-            "images/crate.png",
-            location=pygame.Vector3(0, 0, 0),
+            pygame.image.load("images/crate.png"),
+            translation=pygame.Vector3(0, 0, 0),
             shader=self.shader,
             scale=pygame.Vector3(2, 2, 2),
         )
-        self.donut = Mesh.load(
+
+        self.donut = Mesh.from_file(
             "models/donut.obj",
             shader=self.shader,
-            location=pygame.Vector3(0, 0, 0),
+            translation=pygame.Vector3(0, 0, 0),
             scale=pygame.Vector3(2, 2, 2),
         )
         glEnable(GL_DEPTH_TEST)
@@ -54,7 +57,7 @@ class ExampleProgram(PyEngineGL):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         self.shader.use()
         self.axes.draw(self.camera)
-        self.donut.rotate(1, pygame.Vector3(1, 0, 1))
+        self.donut.rotate(Rotation(0.5, pygame.Vector3(-0.5, 1, 0.5)))
         self.donut.draw(self.camera, [self.light, self.light2])
         self.plane.draw(self.camera, [self.light])
 

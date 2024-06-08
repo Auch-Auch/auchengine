@@ -3,12 +3,10 @@ from OpenGL.GL import *
 
 
 class Texture:
-    def __init__(self, filename=None):
-        self.surface = None
+    def __init__(self, teximage: pygame.Surface):
+        self.surface = teximage
         self.texture_id = glGenTextures(1)
-        if filename is not None:
-            self.surface = pygame.image.load(filename)
-            self.load()
+        self.load()
 
     def load(self):
         pixel_data = pygame.image.tostring(self.surface, "RGBA", 1)

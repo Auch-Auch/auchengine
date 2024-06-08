@@ -4,11 +4,12 @@ from OpenGL.GL import *
 import numpy as np
 from numpy.typing import NDArray
 
+
 def load_vec(
-        data: NDArray[np.float32],
-        buffer_ref: int, 
-        variable_id: int,
-    ) -> None:
+    data: NDArray[np.float32],
+    buffer_ref: int,
+    variable_id: int,
+) -> None:
     # TODO: Refactor to use a buffer/loader object?
     glBindBuffer(GL_ARRAY_BUFFER, buffer_ref)
     glBufferData(GL_ARRAY_BUFFER, data.ravel(), GL_STATIC_DRAW)
@@ -23,7 +24,7 @@ class GraphicsData(Protocol):
 
     def __init__(self, data: Iterable[Number] | NDArray) -> None:
         pass
-    
+
     def finad_variable(self, program_id: int, variable_name: str):
         pass
 
@@ -36,7 +37,7 @@ class GraphicsDataVec:
         self.data = np.array(data, dtype=np.float32)
         self.buffer_ref = glGenBuffers(1)
         self.variable_id = None
-    
+
     def find_variable(self, program_id: int, variable_name: str):
         self.variable_id = glGetAttribLocation(program_id, variable_name)
 

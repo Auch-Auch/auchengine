@@ -4,7 +4,12 @@ from core.uniform import UniformVec3
 
 
 class Light:
-    def __init__(self, position: pygame.Vector3, color: pygame.Vector3 | None = None, light_number: int = 0):
+    def __init__(
+        self,
+        position: pygame.Vector3,
+        color: pygame.Vector3 | None = None,
+        light_number: int = 0,
+    ):
         if color is None:
             color = pygame.Vector3(1, 1, 1)
         self.transformation = transform.identity_matrix()

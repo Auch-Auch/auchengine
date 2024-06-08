@@ -62,20 +62,28 @@ class Camera:
 
         if keys[pygame.K_DOWN]:
             self.transfromation = transform.translate(
-                self.transfromation, 0, 0, self.mouse_sensativity, local=True
+                self.transfromation,
+                pygame.Vector3(0, 0, self.mouse_sensativity),
+                local=True,
             )
         if keys[pygame.K_UP]:
             self.transfromation = transform.translate(
-                self.transfromation, 0, 0, -self.mouse_sensativity, local=True
+                self.transfromation,
+                pygame.Vector3(0, 0, -self.mouse_sensativity),
+                local=True,
             )
 
         if keys[pygame.K_RIGHT]:
             self.transfromation = transform.translate(
-                self.transfromation, self.mouse_sensativity, 0, 0, local=True
+                self.transfromation,
+                pygame.Vector3(self.mouse_sensativity, 0, 0),
+                local=True,
             )
         if keys[pygame.K_LEFT]:
             self.transfromation = transform.translate(
-                self.transfromation, -self.mouse_sensativity, 0, 0, local=True
+                self.transfromation,
+                pygame.Vector3(-self.mouse_sensativity, 0, 0),
+                local=True,
             )
         self.projection.find_variable(program_id, "projection_mat")
         self.projection.load_data()

@@ -30,7 +30,7 @@ class UniformSampler2D:
     def __init__(self, data: Iterable[Number] | NDArray):
         self.data = np.array(data, dtype=np.int32)
         self.variable_id = None
-    
+
     def find_variable(self, program_id: int, variable_name: str) -> int:
         self.variable_id = find_uniform_variable(program_id, variable_name)
 
@@ -41,10 +41,12 @@ class UniformSampler2D:
 
 
 class UniformVec3:
-    def __init__(self, data: Iterable[Number] | NDArray):
-        self.data = np.array(data, dtype=np.float32)
+    def __init__(self, data: Iterable[Number] | NDArray[np.float32]):
+        self.data = data
+        if isinstance(data, Iterable):
+            self.data = np.array(data, dtype=np.float32)
         self.variable_id = None
-    
+
     def find_variable(self, program_id: int, variable_name: str) -> int:
         self.variable_id = find_uniform_variable(program_id, variable_name)
 
@@ -58,7 +60,7 @@ class UniformMat4:
         if isinstance(data, Iterable):
             self.data = np.array(data, dtype=np.float32).reshape((4, 4))
         self.variable_id = None
-    
+
     def find_variable(self, program_id: int, variable_name: str) -> int:
         self.variable_id = find_uniform_variable(program_id, variable_name)
 
