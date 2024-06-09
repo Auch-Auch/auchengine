@@ -1,23 +1,29 @@
 import pygame
 from OpenGL.GL import *
-from core.engine import PyEngineGL
 from core.camera import Camera
 from core.light import Light
 from core.shader import Shader
 from core.mesh import Axes, Mesh
 from core.transformations import Rotation
+from core.screen import Screen
+from core.game_loop import GameLoop
+from core.camera import Camera
+from core.game_object import GameObject
 
 
-class ExampleProgram(PyEngineGL):
+class DonutObject(GameObject):
+
+    def display(self, camera: Camera) -> None:
+        self.mesh.rotate(Rotation(0.5, pygame.Vector3(-0.5, 1, 0.5)))
+        super().display(camera)
+
+
+class SimpleExample:
     def __init__(self) -> None:
-        super().__init__(0, 0, 1920, 1024)
-        self.camera = None
+        self.camera = Camera(800, 600)
+        self.screen = Screen(0, 0, 800, 600, self.camera)
         self.plane = None
-        self.light = None
         self.shader = None
-        glEnable(GL_CULL_FACE)
-        glEnable(GL_BLEND)
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
     def initialize(self):
         self.shader = Shader.from_file(
@@ -28,8 +34,8 @@ class ExampleProgram(PyEngineGL):
             "shaders/vertexcolvert.vs",
             "shaders/vertexcolfrag.vs",
         )
-        self.axes = Axes(self.axes_mat, pygame.Vector3(0, 0, 0))
-        self.camera = Camera(self.screen_width, self.screen_height)
+        self.axes = GameObject(Axes(self.axes_mat, pygame.Vector3(0, 0, 0)))
+
         self.light = Light(
             pygame.Vector3(5, 5, 5), color=pygame.Vector3(1, 1, 1), light_number=0
         )
@@ -37,30 +43,38 @@ class ExampleProgram(PyEngineGL):
             pygame.Vector3(0, 0, 0), color=pygame.Vector3(1, 1, 1), light_number=1
         )
 
-        self.plane = Mesh.from_file(
-            "models/plane.obj",
-            pygame.image.load("images/crate.png"),
-            translation=pygame.Vector3(0, 0, 0),
-            shader=self.shader,
-            scale=pygame.Vector3(2, 2, 2),
+        self.plane = GameObject(
+            Mesh.from_file(
+                "models/plane.obj",
+                pygame.image.load("images/crate.png"),
+                translation=pygame.Vector3(0, 0, 0),
+                shader=self.shader,
+                scale=pygame.Vector3(2, 2, 2),
+            )
         )
 
-        self.donut = Mesh.from_file(
-            "models/donut.obj",
-            shader=self.shader,
-            translation=pygame.Vector3(0, 0, 0),
-            scale=pygame.Vector3(2, 2, 2),
+        self.donut = DonutObject(
+            Mesh.from_file(
+                "models/donut.obj",
+                shader=self.shader,
+                translation=pygame.Vector3(0, 0, 0),
+                scale=pygame.Vector3(2, 2, 2),
+            )
         )
-        glEnable(GL_DEPTH_TEST)
+        self.donut.add_light(self.light)
+        self.donut.add_light(self.light2)
+        self.screen.add_object(self.donut)
+        self.screen.add_object(self.axes)
+        self.screen.add_object(self.plane)
 
     def display(self):
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         self.shader.use()
-        self.axes.draw(self.camera)
-        self.donut.rotate(Rotation(0.5, pygame.Vector3(-0.5, 1, 0.5)))
-        self.donut.draw(self.camera, [self.light, self.light2])
-        self.plane.draw(self.camera, [self.light])
+        self.screen.display_objects()
 
 
 if __name__ == "__main__":
-    ExampleProgram().main_loop()
+    game = SimpleExample()
+    game.initialize()
+    game_loop = GameLoop(60)
+    game_loop.register_display_function(game.display)
+    game_loop.run()
