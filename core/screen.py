@@ -5,7 +5,7 @@ from OpenGL.GLU import *
 import pygame
 from pygame.locals import *
 from core.camera import Camera
-from core.game_object import BaseGameObject
+from core.mesh import Mesh
 
 
 class Screen:  # TODO: define base class when interface is clear
@@ -34,10 +34,10 @@ class Screen:  # TODO: define base class when interface is clear
         glEnable(GL_BLEND)
         glEnable(GL_DEPTH_TEST)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-        self.objects: list[BaseGameObject] = []
+        self.objects: list[Mesh] = []
         self.camera = camera
 
-    def add_object(self, object: BaseGameObject) -> None:
+    def add_object(self, object: Mesh) -> None:
         self.objects.append(object)
 
     def clear(self) -> None:
@@ -46,4 +46,4 @@ class Screen:  # TODO: define base class when interface is clear
     def display_objects(self) -> None:
         self.clear()
         for object in self.objects:
-            object.display(self.camera)
+            object.draw(self.camera)

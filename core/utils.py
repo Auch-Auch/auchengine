@@ -1,4 +1,6 @@
 import io
+from numpy.typing import NDArray
+import numpy as np
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
@@ -75,3 +77,18 @@ def parse_obj(
                 normals_ids.append(n - 1)
 
     return coordinates, normals, textures, triangles, textures_ids, normals_ids
+
+
+def form_vertices(
+    coordinates: list[tuple[float, float, float]], triangles: list[int]
+) -> NDArray:
+    allTriangles = []
+    for t in range(0, len(triangles), 3):
+        allTriangles.extend(
+            [
+                coordinates[triangles[t]],
+                coordinates[triangles[t + 1]],
+                coordinates[triangles[t + 2]],
+            ]
+        )
+    return np.array(allTriangles, np.float32)

@@ -1,5 +1,5 @@
 import io
-from typing import Self
+from typing import Self, Callable
 from OpenGL.GL import *
 import pygame
 from numpy.typing import NDArray
@@ -12,6 +12,7 @@ from core.shader import Shader
 from core.utils import parse_obj
 from core.light import Light
 from core.camera import Camera
+from core.utils import form_vertices
 
 
 class Mesh:
@@ -27,6 +28,7 @@ class Mesh:
         rotation: transform.Rotation | None = None,
         scale: pygame.Vector3 | None = None,
         shader: Shader | None = None,
+        lights: list[Light] | None = None,
     ):
         self.shader = shader
         self.vertices = vertices
@@ -39,12 +41,11 @@ class Mesh:
         self.init_translation = translation
         self.init_rotation = rotation
         self.init_scale = scale
-        if translation is None:
-            self.init_translation = pygame.Vector3(0, 0, 0)
-        if rotation is None:
-            self.init_rotation = transform.Rotation(0, pygame.Vector3(0, 1, 0))
-        if scale is None:
-            self.init_scale = pygame.Vector3(1, 1, 1)
+        self.lights = lights or []
+        self.init_translation = translation or pygame.Vector3(0, 0, 0)
+        self.init_rotation = rotation or transform.Rotation(0, pygame.Vector3(0, 1, 0))
+        self.init_scale = scale or pygame.Vector3(1, 1, 1)
+        self.actions: list[Callable] = []
 
         self.colors = (
             colors
@@ -54,7 +55,9 @@ class Mesh:
         glBindVertexArray(self.vao_ref)
 
         position = GraphicsDataVec(self.vertices)
-        position.find_variable(self.shader.program_id, "position")
+        position.find_variable(
+            self.shader.program_id, "position"
+        )  # TODO: refactor hardcoded variable
         position.load_data()
         colors = GraphicsDataVec(self.colors)
         colors.find_variable(self.shader.program_id, "vertex_color")
@@ -85,21 +88,6 @@ class Mesh:
             self.texture_var = UniformSampler2D([self.texture.texture_id, 1])
             self.texture_var.find_variable(self.shader.program_id, "tex")
 
-    @staticmethod
-    def form_vertices(
-        coordinates: list[tuple[float, float, float]], triangles: list[int]
-    ) -> NDArray:
-        allTriangles = []
-        for t in range(0, len(triangles), 3):
-            allTriangles.extend(
-                [
-                    coordinates[triangles[t]],
-                    coordinates[triangles[t + 1]],
-                    coordinates[triangles[t + 2]],
-                ]
-            )
-        return np.array(allTriangles, np.float32)
-
     @classmethod
     def from_stream(
         cls,
@@ -115,9 +103,9 @@ class Mesh:
         coordinates, normals, textures, triangles, textures_ids, normals_ids = (
             parse_obj(source)
         )
-        vertices = cls.form_vertices(coordinates, triangles)
-        vertex_normals = cls.form_vertices(normals, normals_ids)
-        vertex_textures = cls.form_vertices(textures, textures_ids)
+        vertices = form_vertices(coordinates, triangles)
+        vertex_normals = form_vertices(normals, normals_ids)
+        vertex_textures = form_vertices(textures, textures_ids)
         return cls(
             vertices,
             teximage=teximage,
@@ -148,36 +136,49 @@ class Mesh:
                 f, teximage, colors, draw_type, translation, rotation, scale, shader
             )
 
+    def add_lights(self, lights: list[Light]) -> None:
+        self.lights.extend(lights)
+
     def rotate(self, rotation: transform.Rotation) -> None:
-        self.transformation_mat = transform.rotateA(
-            self.transformation_mat,
-            rotation.angle,
-            rotation.axis,
-        )
-        self.transformation = UniformMat4(self.transformation_mat)
-        self.transformation.find_variable(self.shader.program_id, "model_mat")
-        self.transformation.load_data()
+        def func() -> None:
+            self.transformation_mat = transform.rotateA(
+                self.transformation_mat,
+                rotation.angle,
+                rotation.axis,
+            )
+            self.transformation = UniformMat4(self.transformation_mat)
+            self.transformation.find_variable(self.shader.program_id, "model_mat")
+            self.transformation.load_data()
+
+        self.actions.append(func)
 
     def translate(self, translation: pygame.Vector3) -> None:
-        self.transformation_mat = transform.translate(
-            self.transformation_mat, translation
-        )
-        self.transformation = UniformMat4(self.transformation_mat)
-        self.transformation.load_data()
+        def func() -> None:
+            self.transformation_mat = transform.translate(
+                self.transformation_mat, translation
+            )
+            self.transformation = UniformMat4(self.transformation_mat)
+            self.transformation.load_data()
+
+        self.actions.append(func)
 
     def scale(self, scale: pygame.Vector3) -> None:
-        self.transformation_mat = transform.do_scale(self.transformation_mat, scale)
-        self.transformation = UniformMat4(self.transformation_mat)
-        self.transformation.load_data()
+        def func() -> None:
+            self.transformation_mat = transform.do_scale(self.transformation_mat, scale)
+            self.transformation = UniformMat4(self.transformation_mat)
+            self.transformation.load_data()
 
-    def draw(self, camera: Camera, lights: list[Light] | None = None) -> None:
+        self.actions.append(func)
+
+    def draw(self, camera: Camera) -> None:
         self.shader.use()
         camera.update(self.shader.program_id)
-        if lights is not None:
-            for light in lights:
-                light.update(self.shader.program_id)
+        for light in self.lights:
+            light.update(self.shader.program_id)
         if self.texture_var:
             self.texture_var.load_data()
+        for action in self.actions:
+            action()
         self.transformation.load_data()
         glBindVertexArray(self.vao_ref)
         glDrawArrays(self.draw_type, 0, len(self.vertices))
