@@ -56,15 +56,17 @@ class Mesh:
 
         position = GraphicsDataVec(self.vertices)
         position.find_variable(
-            self.shader.program_id, "position"
+            self.shader.program_id, self.shader.vertex_position_var
         )  # TODO: refactor hardcoded variable
         position.load_data()
         colors = GraphicsDataVec(self.colors)
-        colors.find_variable(self.shader.program_id, "vertex_color")
+        colors.find_variable(self.shader.program_id, self.shader.vertex_color_var)
         colors.load_data()
         if vertex_normals is not None:
             v_normals = GraphicsDataVec(self.vertex_normals)
-            v_normals.find_variable(self.shader.program_id, "vertex_normal")
+            v_normals.find_variable(
+                self.shader.program_id, self.shader.vertex_normal_Var
+            )
             v_normals.load_data()
         self.transformation_mat = transform.rotateA(
             transform.identity_matrix(),
@@ -79,14 +81,20 @@ class Mesh:
             self.transformation_mat, self.init_scale
         )
         self.transformation = UniformMat4(self.transformation_mat)
-        self.transformation.find_variable(self.shader.program_id, "model_mat")
+        self.transformation.find_variable(
+            self.shader.program_id, self.shader.model_matrix_var
+        )
         if teximage is not None and vertex_textures is not None:
             textures = GraphicsDataVec(self.vertex_textures)
-            textures.find_variable(self.shader.program_id, "vertex_uv")
+            textures.find_variable(
+                self.shader.program_id, self.shader.vertex_tex_uv_var
+            )
             textures.load_data()
             self.texture = Texture(teximage)
             self.texture_var = UniformSampler2D([self.texture.texture_id, 1])
-            self.texture_var.find_variable(self.shader.program_id, "tex")
+            self.texture_var.find_variable(
+                self.shader.program_id, self.shader.vertex_tex_var
+            )
 
     @classmethod
     def from_stream(
@@ -147,7 +155,9 @@ class Mesh:
                 rotation.axis,
             )
             self.transformation = UniformMat4(self.transformation_mat)
-            self.transformation.find_variable(self.shader.program_id, "model_mat")
+            self.transformation.find_variable(
+                self.shader.program_id, self.shader.model_matrix_var
+            )
             self.transformation.load_data()
 
         self.actions.append(func)
@@ -172,7 +182,7 @@ class Mesh:
 
     def draw(self, camera: Camera) -> None:
         self.shader.use()
-        camera.update(self.shader.program_id)
+        camera.update(self.shader)
         for light in self.lights:
             light.update(self.shader.program_id)
         if self.texture_var:

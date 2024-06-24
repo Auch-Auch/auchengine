@@ -5,6 +5,7 @@ from OpenGL.GLUT import *
 from OpenGL.GLU import *
 from numpy.typing import NDArray
 import numpy as np
+from core.shader import Shader
 import core.transformations as transform
 from core.uniform import UniformMat4
 
@@ -48,7 +49,7 @@ class Camera:
             dtype=np.float32,
         )
 
-    def update(self, program_id: int) -> None:
+    def update(self, shader: Shader) -> None:
         if pygame.mouse.get_visible():
             return
         pygame.mouse.set_visible(False)
@@ -88,9 +89,9 @@ class Camera:
                 pygame.Vector3(-self.mouse_sensativity, 0, 0),
                 local=True,
             )
-        self.projection.find_variable(program_id, "projection_mat")
+        self.projection.find_variable(shader.program_id, shader.projection_matrix_var)
         self.projection.load_data()
         lookat_mat = self.transfromation
         lookat = UniformMat4(lookat_mat)
-        lookat.find_variable(program_id, "view_mat")
+        lookat.find_variable(shader.program_id, shader.view_matrix_var)
         lookat.load_data()

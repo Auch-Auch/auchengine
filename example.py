@@ -21,10 +21,23 @@ class SimpleExample:
         self.shader = Shader.from_file(
             "shaders/textruedvert.vs",
             "shaders/texturedfrag.vs",
+            "position",
+            "vertex_color",
+            "model_mat",
+            "projection_mat",
+            "view_mat",
+            "tex",
+            "vertex_uv",
+            "vertex_normal",
         )
         self.axes_mat = Shader.from_file(
             "shaders/vertexcolvert.vs",
             "shaders/vertexcolfrag.vs",
+            "position",
+            "vertex_color",
+            "model_mat",
+            "projection_mat",
+            "view_mat",
         )
         self.axes = Axes(self.axes_mat, pygame.Vector3(0, 0, 0))
 
